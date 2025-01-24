@@ -1,0 +1,182 @@
+Analysis and Documentation of the Prisma Schema
+The schema is a comprehensive design for a healthcare-related database system. It supports users, pharmacies, medicines, orders, and reviews, among other entities. Let’s break it down into:
+
+Explanation of Tables
+Entity-Relationship Diagram (ERD)
+Documentation
+1. Explanation of Tables
+Main Entities
+User
+
+Represents users of the system, which can be a pharmacy owner, a medicine company, or a regular user based on the role field.
+Relationships:
+A pharmacy can have one user (Pharmacy table).
+Users can create orders, reviews, search histories, and receive notifications.
+Medicine
+
+Represents medicines available in the system.
+Contains details like name, active_substance, and description.
+Relationships:
+Medicines are related to Category (via MedicineCategory).
+A pharmacy's inventory stores medicines (PharmacyInventory).
+Medicines are associated with diseases (DiseaseMedicine) and reviews.
+Pharmacy
+
+Represents pharmacies in the system.
+Each pharmacy has a single associated User.
+Relationships:
+Pharmacies maintain an inventory (PharmacyInventory) and fulfill orders (Order).
+They also collect reviews.
+Category
+
+Categories are used to organize medicines.
+Relationships:
+Many-to-many relationship with Medicine through the MedicineCategory table.
+Order
+
+Represents an order placed by a user at a pharmacy.
+Relationships:
+Linked to OrderItem, which contains details about each medicine in the order.
+Associated with a single User and a single Pharmacy.
+Linking Tables
+MedicineCategory
+
+Bridges Medicine and Category in a many-to-many relationship.
+PharmacyInventory
+
+Links Pharmacy and Medicine, allowing pharmacies to manage their stocks and prices.
+DiseaseMedicine
+
+Bridges Disease and Medicine in a many-to-many relationship.
+Other Supporting Tables
+Review
+
+Tracks reviews for Pharmacy and Medicine from users.
+Supports optional associations with a pharmacy or medicine.
+SearchHistory
+
+Tracks user searches, including the query and its result count.
+Useful for analytics and personalizing suggestions.
+Notification
+
+Tracks notifications sent to users.
+Helps with user engagement by marking notifications as read or unread.
+Disease
+
+Represents diseases that medicines can treat.
+Establishes many-to-many relationships with Medicine.
+2. Entity-Relationship Diagram (ERD)
+Below is an ERD description that represents the relationships in the schema. Each entity (table) is connected based on their relationships.
+
+Relationships Overview
+User ↔ Pharmacy: One-to-One
+User ↔ Order: One-to-Many
+User ↔ Review: One-to-Many
+User ↔ Notification: One-to-Many
+User ↔ SearchHistory: One-to-Many
+Pharmacy ↔ PharmacyInventory: One-to-Many
+Pharmacy ↔ Order: One-to-Many
+Pharmacy ↔ Review: One-to-Many
+Medicine ↔ Review: One-to-Many
+Medicine ↔ Disease: Many-to-Many (via DiseaseMedicine)
+Medicine ↔ Category: Many-to-Many (via MedicineCategory)
+Medicine ↔ PharmacyInventory: One-to-Many
+Order ↔ OrderItem: One-to-Many
+Diagram (Rendered in text for clarity)
+mathematica
+Copy
+Edit
+User
+  ├── 1:1 ── Pharmacy
+  ├── 1:N ── Order
+  ├── 1:N ── Review
+  ├── 1:N ── SearchHistory
+  ├── 1:N ── Notification
+
+Pharmacy
+  ├── 1:N ── PharmacyInventory
+  ├── 1:N ── Order
+  ├── 1:N ── Review
+
+Medicine
+  ├── N:M ── Disease (via DiseaseMedicine)
+  ├── N:M ── Category (via MedicineCategory)
+  ├── 1:N ── PharmacyInventory
+  ├── 1:N ── Review
+
+Order
+  ├── 1:N ── OrderItem
+
+Disease
+  ├── N:M ── Medicine (via DiseaseMedicine)
+
+Category
+  ├── N:M ── Medicine (via MedicineCategory)
+3. Documentation
+User
+Primary Key: user_id
+Fields:
+email (unique): User email.
+password_hash: Encrypted password.
+role (enum): Determines if the user is a pharmacy, company, or regular user.
+Relations:
+One-to-One with Pharmacy.
+One-to-Many with Order, Review, SearchHistory, and Notification.
+Medicine
+Primary Key: medicine_id
+Fields:
+name (unique): Name of the medicine.
+active_substance: Key ingredient.
+company_id: Links to the company (User).
+Relations:
+Many-to-Many with Category.
+Many-to-Many with Disease.
+One-to-Many with PharmacyInventory.
+Pharmacy
+Primary Key: pharmacy_id
+Fields:
+name: Pharmacy name.
+location: Address/geolocation of the pharmacy.
+Relations:
+One-to-One with User.
+One-to-Many with PharmacyInventory and Order.
+Order
+Primary Key: order_id
+Fields:
+total_price: Total price of the order.
+status (enum): pending, completed, or cancelled.
+Relations:
+One-to-Many with OrderItem.
+OrderItem
+Primary Key: order_item_id
+Fields:
+quantity: Number of units.
+price: Price per unit.
+Relations:
+Many-to-One with Order.
+Category
+Primary Key: category_id
+Fields:
+name (unique): Category name.
+Relations:
+Many-to-Many with Medicine.
+Disease
+Primary Key: disease_id
+Fields:
+name (unique): Disease name.
+Relations:
+Many-to-Many with Medicine.
+Review
+Primary Key: review_id
+Fields:
+rating: Rating out of 5.
+comment: Review comment.
+Relations:
+Many-to-One with Pharmacy and Medicine.
+PharmacyInventory
+Primary Key: inventory_id
+Fields:
+stock_quantity: Number of items in stock.
+price: Price per unit.
+Relations:
+Many-to-One with Pharmacy.

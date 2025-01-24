@@ -1,0 +1,97 @@
+Healthcare Database Schema Documentation
+1. System Overview
+The healthcare database schema is a comprehensive system designed to manage interactions between users, pharmacies, medicines, orders, and related entities. It provides a robust framework for tracking medical information, inventory, and user interactions.
+2. Entity Relationship Diagram (ERD)
+PHARMACY ||--o{ PHARMACY_INVENTORY : "manages"
+PHARMACY ||--o{ ORDER : "fulfills"
+PHARMACY ||--o{ REVIEW : "receives"
+
+MEDICINE }o--o{ DISEASE : "treats"
+MEDICINE }o--o{ CATEGORY : "belongs to"
+MEDICINE ||--o{ PHARMACY_INVENTORY : "stocked in"
+MEDICINE ||--o{ REVIEW : "gets"
+
+ORDER ||--o{ ORDER_ITEM : "contains"
+3. Detailed Entity Documentation
+3.1 User Entity
+Purpose: Represents system users with varying roles.
+Key Attributes:
+
+user_id: Unique identifier
+email: Unique contact email
+role: User classification (pharmacy, company, regular user)
+
+Relationships:
+
+One-to-One with Pharmacy
+One-to-Many with Orders, Reviews, Search History
+
+3.2 Medicine Entity
+Purpose: Catalog of available medicines.
+Key Attributes:
+
+medicine_id: Unique identifier
+name: Medicine name
+active_substance: Primary chemical component
+company_id: Manufacturer reference
+
+Relationships:
+
+Many-to-Many with Diseases
+Many-to-Many with Categories
+One-to-Many with Pharmacy Inventory
+
+3.3 Pharmacy Entity
+Purpose: Manage pharmacy information and inventory.
+Key Attributes:
+
+pharmacy_id: Unique identifier
+name: Pharmacy name
+location: Geographic location
+
+Relationships:
+
+One-to-One with User
+One-to-Many with Inventory
+One-to-Many with Orders
+
+3.4 Order Management
+Purpose: Track user purchase transactions.
+Key Entities:
+
+Order:
+
+order_id: Unique transaction identifier
+total_price: Cumulative order value
+status: Transaction state (pending, completed, cancelled)
+
+
+Order Item:
+
+order_item_id: Specific line item identifier
+quantity: Number of medicine units
+price: Per-unit pricing
+
+
+
+4. Advanced Relationship Mapping
+Detailed Relationship GraphClick to open diagram
+5. Design Principles
+
+Flexible Role-Based System: Supports multiple user types
+Comprehensive Tracking: Enables detailed medical and transactional tracking
+Scalable Architecture: Supports complex relationships between entities
+
+6. Recommended Implementations
+
+Use unique constraints on critical fields
+Implement robust authentication for user roles
+Create indexes on frequently queried fields
+Implement soft delete mechanisms for historical data preservation
+
+7. Potential Extensions
+
+Add geospatial indexing for pharmacy locations
+Implement advanced search capabilities
+Create recommendation engines based on search history
+</antArtifact>

@@ -167,6 +167,9 @@ CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
 CREATE UNIQUE INDEX "Pharmacy_user_id_key" ON "Pharmacy"("user_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "PharmacyInventory_pharmacy_id_medicine_id_key" ON "PharmacyInventory"("pharmacy_id", "medicine_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Disease_name_key" ON "Disease"("name");
 
 -- AddForeignKey

@@ -88,6 +88,8 @@ model PharmacyInventory {
   price          Float
   Pharmacy       Pharmacy @relation(fields: [pharmacy_id], references: [pharmacy_id])
   Medicine       Medicine @relation(fields: [medicine_id], references: [medicine_id])
+
+  @@unique([pharmacy_id, medicine_id]) // Add this constraint
 }
 
 model Order {
