@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// prisma/schema.prisma
+
+model User {
+  user_id         Int             @id @default(autoincrement())
+  email           String          @unique
+  password_hash   String
+  name            String
+  role            Role
+  phone_number    String?
+  location        String? // Adjust type based on your geospatial library
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+  Pharmacy        Pharmacy?
+  Medicines       Medicine[]
+  Orders          Order[]
+  Reviews         Review[]
+  SearchHistories SearchHistory[]
+  Notification    Notification[]
+}
+
+model Medicine {
+  medicine_id         Int                 @id @default(autoincrement())
+  name                String              @unique
+  active_substance    String?
+  description         String?
+  uses                String?
+  company_id          Int?
+  created_at          DateTime            @default(now())
+  updated_at          DateTime            @updatedAt
+  company             User?               @relation(fields: [company_id], references: [user_id])
+  Categories          MedicineCategory[]
+  PharmacyInventories PharmacyInventory[]
+  OrderItems          OrderItem[]
+  DiseaseMedicines    DiseaseMedicine[]
+  Reviews             Review[]
+}
+
+model Category {
+  category_id Int                @id @default(autoincrement())
+  name        String             @unique
+  description String?
+  Medicines   MedicineCategory[]
+}
+
+model MedicineCategory {
+  medicine_id Int
+  category_id Int
+  Medicine    Medicine @relation(fields: [medicine_id], references: [medicine_id])
+  Category    Category @relation(fields: [category_id], references: [category_id])
+
+  @@id([medicine_id, category_id])
+}
+
+model Pharmacy {
+  pharmacy_id  Int                 @id @default(autoincrement())
+  user_id      Int                 @unique
+  name         String
+  address      String?
+  phone_number String?
+  location     String? // Adjust type based on your geospatial library
+  created_at   DateTime            @default(now())
+  User         User                @relation(fields: [user_id], references: [user_id])
+  Inventory    PharmacyInventory[]
+  Orders       Order[]
+  Reviews      Review[]
+}
+
+model PharmacyInventory {
+  inventory_id   Int      @id @default(autoincrement())
+  pharmacy_id    Int
+  medicine_id    Int
+  stock_quantity Int      @default(0)
+  price          Float
+  Pharmacy       Pharmacy @relation(fields: [pharmacy_id], references: [pharmacy_id])
+  Medicine       Medicine @relation(fields: [medicine_id], references: [medicine_id])
+}
+
+model Order {
+  order_id    Int         @id @default(autoincrement())
+  user_id     Int
+  pharmacy_id Int
+  total_price Float
+  status      OrderStatus @default(pending)
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  User        User        @relation(fields: [user_id], references: [user_id])
+  Pharmacy    Pharmacy    @relation(fields: [pharmacy_id], references: [pharmacy_id])
+  OrderItems  OrderItem[]
+}
+
+model OrderItem {
+  order_item_id Int      @id @default(autoincrement())
+  order_id      Int
+  medicine_id   Int
+  quantity      Int
+  price         Float
+  Order         Order    @relation(fields: [order_id], references: [order_id])
+  Medicine      Medicine @relation(fields: [medicine_id], references: [medicine_id])
+}
+
+model SearchHistory {
+  search_id    Int        @id @default(autoincrement())
+  user_id      Int
+  search_query String
+  search_type  SearchType
+  result_count Int
+  created_at   DateTime   @default(now())
+  User         User       @relation(fields: [user_id], references: [user_id])
+}
+
+model Disease {
+  disease_id  Int               @id @default(autoincrement())
+  name        String            @unique
+  description String?
+  Medicines   DiseaseMedicine[]
+}
+
+model DiseaseMedicine {
+  disease_id  Int
+  medicine_id Int
+  Disease     Disease  @relation(fields: [disease_id], references: [disease_id])
+  Medicine    Medicine @relation(fields: [medicine_id], references: [medicine_id])
+
+  @@id([disease_id, medicine_id])
+}
+
+model Review {
+  review_id   Int       @id @default(autoincrement())
+  user_id     Int
+  pharmacy_id Int?
+  medicine_id Int?
+  rating      Int
+  comment     String?
+  created_at  DateTime  @default(now())
+  User        User      @relation(fields: [user_id], references: [user_id])
+  Pharmacy    Pharmacy? @relation(fields: [pharmacy_id], references: [pharmacy_id])
+  Medicine    Medicine? @relation(fields: [medicine_id], references: [medicine_id])
+}
+
+model Notification {
+  notification_id Int      @id @default(autoincrement())
+  user_id         Int
+  message         String
+  is_read         Boolean  @default(false)
+  created_at      DateTime @default(now())
+  User            User     @relation(fields: [user_id], references: [user_id])
+}
+
+enum Role {
+  pharmacy
+  company
+  user
+}
+
+enum OrderStatus {
+  pending
+  completed
+  cancelled
+}
+
+enum SearchType {
+  medicine
+  category
+  disease
+  location
+}
