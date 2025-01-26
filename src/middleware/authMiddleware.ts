@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { User } from "@prisma/client";
 
 // Extend the Request interface to include the user property
 declare module "express-serve-static-core" {
@@ -31,11 +32,8 @@ export const hashPassword = (password: string): Promise<string> => {
   return bcrypt.hash(password, 5);
 };
 
-export const createJWT = (user: { id: number; username: string }): string => {
-  const token = jwt.sign(
-    { id: user.id, username: user.username },
-    process.env.JWT_SECRET as string
-  );
+export const createJWT = (user: User): string => {
+  const token = jwt.sign(user, process.env.JWT_SECRET as string);
   console.log("token", token);
   return token;
 };
@@ -61,6 +59,7 @@ export const protect = (
 
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET as string);
+    console.log("user", user);
     req.user = user;
     next();
   } catch (error) {

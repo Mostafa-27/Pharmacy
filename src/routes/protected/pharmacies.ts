@@ -57,11 +57,11 @@ router.get("/", protect, async (req, res) => {
  */
 router.post("/", protect, async (req, res) => {
   const { name, address, phone_number, location } = req.body;
-  console.log(req.user.id);
+  console.log("user.id", req.user.user_id);
 
   // Check if the user's role is "pharmacy"
   const user = await prisma.user.findUnique({
-    where: { user_id: req.user.id },
+    where: { user_id: req.user.user_id },
   });
 
   if (user.role !== "pharmacy") {
@@ -73,9 +73,9 @@ router.post("/", protect, async (req, res) => {
 
   // Check if the user already has other pharmacies
   const existingPharmacy = await prisma.pharmacy.findFirst({
-    where: { user_id: req.user.id },
+    where: { user_id: req.user.user_id },
   });
-
+  console.log("existingPharmacy", existingPharmacy);
   if (existingPharmacy) {
     res.status(403).json({ error: "User already has a pharmacy" });
     return;
@@ -83,7 +83,7 @@ router.post("/", protect, async (req, res) => {
   try {
     const newPharmacy = await prisma.pharmacy.create({
       data: {
-        user_id: req.user.id,
+        user_id: req.user.user_id,
         name,
         address,
         phone_number,

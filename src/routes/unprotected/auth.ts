@@ -42,6 +42,15 @@ const prisma = new PrismaClient();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
+ *             properties:
+ *                 token:
+ *                   type: string
+ *                 email:
+ *                    type: string
+ *                 role:
+ *                   type: string
+ *                 name:
+ *                  type: string
  */
 router.post("/signup", async (req, res) => {
   const { email, password, name, role, phone_number, location } = req.body;
@@ -57,8 +66,13 @@ router.post("/signup", async (req, res) => {
         password_hash: await hashPassword(password),
       },
     });
-    const token = createJWT({ id: user.user_id, username: user.email });
-    res.status(201).json({ token: token });
+    const token = createJWT(user);
+    res.status(201).json({
+      token: token,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -91,6 +105,12 @@ router.post("/signup", async (req, res) => {
  *               properties:
  *                 token:
  *                   type: string
+ *                 email:
+ *                    type: string
+ *                 role:
+ *                   type: string
+ *                 name:
+ *                  type: string
  */
 router.post("/signin", async (req, res) => {
   const { email, password } = req.body;
@@ -110,14 +130,38 @@ router.post("/signin", async (req, res) => {
     const isValid = await comparePassword(password, user.password_hash);
 
     if (!isValid) {
-      res
-        .status(401)
-        .json({ message: "invalid password" + user.password_hash });
+      res.status(401).json({ message: "invalid password" });
       return;
     }
 
-    const token = createJWT({ id: user.user_id, username: user.email });
-    res.status(200).json({ token: token });
+    let tokenPayload = {
+      user_id: user.user_id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      pharmacy_id: null,
+    };
+
+    if (user.role === "pharmacy") {
+      const pharmacy = await prisma.pharmacy.findUnique({
+        where: {
+          user_id: user.user_id,
+        },
+      });
+      tokenPayload.pharmacy_id = pharmacy?.pharmacy_id;
+    }
+
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.status(200).json({
+      token: token,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      pharmacy_id: tokenPayload.pharmacy_id,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

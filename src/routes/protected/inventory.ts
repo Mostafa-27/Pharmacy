@@ -37,12 +37,12 @@ router.get("/stock", inventoryController.getStock);
  *           schema:
  *             type: object
  *             properties:
- *               pharmacy_id:
- *                 type: integer
  *               medicine_id:
  *                 type: integer
  *               quantity:
  *                 type: integer
+ *               price:
+ *                 type: number
  *     responses:
  *       200:
  *         description: Reorder successful
@@ -87,5 +87,31 @@ router.post("/barcode-scan", inventoryController.scanBarcode);
  *                 type: string
  */
 router.get("/locations", inventoryController.getLocations);
+
+/**
+ * @swagger
+ * /inventory/medicine-stock:
+ *   get:
+ *     summary: Retrieve the stock information for a specific medicine
+ *     tags: [Inventory]
+ *     parameters:
+ *       - in: query
+ *         name: medicine_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ID of the medicine
+ *     responses:
+ *       200:
+ *         description: Medicine stock information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 stock:
+ *                   $ref: '#/components/schemas/PharmacyInventory'
+ */
+router.get("/medicine-stock", inventoryController.getMedicineStock);
 
 export default router;
