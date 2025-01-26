@@ -29,8 +29,33 @@ export const scanBarcode = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  // Implement barcode scanning logic here
-  res.json({ message: "Barcode scanned" });
+  try {
+    const { barcode } = req.body;
+    console.log("barcode", req.user.pharmacy_id, barcode);
+    const stockItem = await inventoryService.getStockByBarcode(
+      req.user.pharmacy_id,
+      barcode
+    );
+
+    if (!stockItem) {
+      res.status(404).json({ error: "Item not found" });
+      return;
+    }
+
+    if (stockItem.stock_quantity <= 0) {
+      res.status(400).json({ error: "Out of stock" });
+      return;
+    }
+
+    const updatedStock = await inventoryService.updateStockQuantity(
+      req.user.pharmacy_id,
+      barcode,
+      stockItem.stock_quantity - 1
+    );
+    res.json(updatedStock);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 export const getLocations = async (

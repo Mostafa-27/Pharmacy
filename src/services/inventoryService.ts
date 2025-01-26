@@ -104,3 +104,55 @@ export const reorderStock = async (
     throw error;
   }
 };
+
+export const getStockByBarcode = async (
+  pharmacyId: number,
+  barcode: string
+) => {
+  return await prisma.pharmacyInventory.findFirst({
+    where: {
+      pharmacy_id: pharmacyId,
+      Medicine: {
+        barcode: barcode,
+      },
+    },
+    select: {
+      stock_quantity: true,
+      price: true,
+      Medicine: true,
+    },
+  });
+};
+
+export const updateStockQuantity = async (
+  pharmacyId: number,
+  barcode: string,
+  newQuantity: number
+) => {
+  const stockItem = await prisma.pharmacyInventory.findFirst({
+    where: {
+      pharmacy_id: pharmacyId,
+      Medicine: {
+        barcode: barcode,
+      },
+    },
+  });
+
+  if (!stockItem) {
+    throw new Error("Item not found");
+  }
+
+  return await prisma.pharmacyInventory.update({
+    where: {
+      inventory_id: stockItem.inventory_id,
+    },
+    data: {
+      stock_quantity: newQuantity,
+    },
+    select: {
+      stock_quantity: true,
+      price: true,
+      Medicine: true,
+    },
+  });
+};

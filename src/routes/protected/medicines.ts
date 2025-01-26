@@ -49,12 +49,15 @@ router.get("/", protect, async (req, res) => {
  *                 type: string
  *               company_id:
  *                 type: integer
+ *               barcode:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Medicine added
  */
 router.post("/", protect, async (req, res) => {
-  const { name, active_substance, description, uses, company_id } = req.body;
+  const { name, active_substance, description, uses, company_id, barcode } =
+    req.body;
 
   try {
     const newMedicine = await prisma.medicine.create({
@@ -64,6 +67,7 @@ router.post("/", protect, async (req, res) => {
         description,
         uses,
         company_id,
+        barcode,
       },
     });
 

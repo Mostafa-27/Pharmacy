@@ -40,6 +40,7 @@ model Medicine {
   description         String?
   uses                String?
   company_id          Int?
+  barcode             String              @unique
   created_at          DateTime            @default(now())
   updated_at          DateTime            @updatedAt
   company             User?               @relation(fields: [company_id], references: [user_id])
